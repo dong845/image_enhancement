@@ -1,5 +1,6 @@
-train_datasets/
 
-merged_data/
-
-__pycache__/
+/__pycache__/
+/merged_data/
+/output/
+/train_datasets/
+/weights/

@@ -1,10 +1,8 @@
-import glob
 import random
 import os
 import numpy as np
 from torch.utils.data import Dataset
 from PIL import Image
-import torchvision.transforms as transforms
 
 class ImageDataset(Dataset):
     def __init__(self, transform, unaligned=False, mode='train'):
@@ -23,7 +21,8 @@ class ImageDataset(Dataset):
         for root, dirs, files in os.walk(folder):
             for file in files:
                 if "png" in file:
-                    self.names.append(file)
+                    if "high" in folder:
+                        self.names.append(file)
                     path = os.path.join(root, file)
                     img = Image.open(path)
                     lists.append(np.float32(np.array(img)/255.0))
@@ -42,8 +41,4 @@ class ImageDataset(Dataset):
         label = augmentations["mask"]
         name = self.names[idx]
         return image, label, name
-        
-        
-    
-    
         
