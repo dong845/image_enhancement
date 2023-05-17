@@ -29,11 +29,11 @@ output_dir = osp.join(root_dir, "output")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
-parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
+parser.add_argument('--n_epochs', type=int, default=500, help='number of epochs of training')
 parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
 parser.add_argument('--dataroot', type=str, default='datasets/horse2zebra/', help='root directory of the dataset')
-parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
-parser.add_argument('--weight_decay', type=float, default=0.0001, help='weight decay')
+parser.add_argument('--lr', type=float, default=3e-4, help='initial learning rate')
+parser.add_argument('--weight_decay', type=float, default=1e-3, help='weight decay')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
 parser.add_argument('--size', type=int, default=256, help='size of the data crop (squared assumed)')
 parser.add_argument('--input_nc', type=int, default=1, help='number of channels of input data')
@@ -132,6 +132,7 @@ def test(G_A2B, G_B2A, D_A, D_B, overall_score, mode="A2B"):
         metrics[key] /= len(test_dataset)
     print("metrics:", metrics)
     cur_score = metrics["psnr"]+metrics["ssim"]+metrics["dice"]-0.05*metrics["time"]
+    print("current score:", cur_score, " overall_score:", overall_score)
     if cur_score>overall_score:
         overall_score = cur_score
         # Save models checkpoints
@@ -227,11 +228,11 @@ def train():
             optimizer_D_B.step()
             ###################################
 
-            loss_dict["loss_G"] += loss_G
-            loss_dict["loss_G_identity"] += (loss_identity_A + loss_identity_B)
-            loss_dict["loss_G_GAN"] += (loss_GAN_A2B + loss_GAN_B2A)
-            loss_dict["loss_G_cycle"] += (loss_cycle_ABA + loss_cycle_BAB)
-            loss_dict["loss_D"] += (loss_D_A + loss_D_B)
+            loss_dict["loss_G"] += loss_G.item()
+            loss_dict["loss_G_identity"] += (loss_identity_A.item() + loss_identity_B.item())
+            loss_dict["loss_G_GAN"] += (loss_GAN_A2B.item() + loss_GAN_B2A.item())
+            loss_dict["loss_G_cycle"] += (loss_cycle_ABA.item() + loss_cycle_BAB.item())
+            loss_dict["loss_D"] += (loss_D_A.item() + loss_D_B.item())
 
             # Progress report (http://localhost:8097)
             # logger.log({'loss_G': loss_G, 'loss_G_identity': (loss_identity_A + loss_identity_B), 'loss_G_GAN': (loss_GAN_A2B + loss_GAN_B2A),
