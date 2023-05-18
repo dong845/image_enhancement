@@ -38,7 +38,7 @@ class ImageDataset(Dataset):
             idx1 = idx
         augmentations = self.transform(image=self.high_imgs[idx], mask=self.low_imgs[idx1])
         image = augmentations["image"]
-        label = augmentations["mask"]
+        label = augmentations["mask"].unsqueeze(0)
         name = self.names[idx]
         return image, label, name
         

@@ -35,7 +35,7 @@ class Generator(nn.Module):
         in_features = 64
         out_features = in_features*2
         for _ in range(2):
-            model += [StageModule(in_channels=in_features, hidden_dimension=out_features, layers= 2,
+            model += [StageModule(in_channels=in_features, hidden_dimension=in_features, layers= 2,
                                   downscaling_factor=2, num_heads=12, head_dim=32,
                                   window_size=8, relative_pos_embedding=True),
                         nn.Conv2d(in_features, out_features, 3, stride=1, padding=1),
@@ -51,19 +51,16 @@ class Generator(nn.Module):
         # Upsampling
         out_features = in_features//2
         for _ in range(2):
-            model += [StageModule(in_channels=in_features, hidden_dimension=out_features, layers= 2,
-                                  downscaling_factor=1, num_heads=12, head_dim=32,
-                                  window_size=8, relative_pos_embedding=True),
-                        nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
+            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
                         nn.InstanceNorm2d(out_features),
                         nn.ReLU(inplace=True) ]
             in_features = out_features
             out_features = in_features//2
 
         # Output layer
-        model += [  nn.ReflectionPad2d(3),
-                    nn.Conv2d(64, output_nc, 7),
-                    nn.Tanh() ]
+        model += [  nn.ReflectionPad2d(1),
+                    nn.Conv2d(64, output_nc, 3),
+                    nn.Sigmoid() ]
 
         self.model = nn.Sequential(*model)
 

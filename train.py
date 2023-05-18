@@ -7,15 +7,15 @@ from torch.autograd import Variable
 import torch
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from models import Generator
-from models import Discriminator
+from models_swin import Generator
+from models_swin import Discriminator
 from utils import ReplayBuffer
 from utils import LambdaLR
 # from utils import Logger
 from utils import weights_init_normal
 from torchvision.utils import save_image
 from datasets import ImageDataset
-from metrics import calculate_psnr, calculate_ssim, calculate_dice_coefficient
+from metrics import compute_PSNR, compute_SSIM, calculate_dice_coefficient
 import time
 import os.path as osp
 
@@ -29,11 +29,11 @@ output_dir = osp.join(root_dir, "output")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
-parser.add_argument('--n_epochs', type=int, default=500, help='number of epochs of training')
+parser.add_argument('--n_epochs', type=int, default=250, help='number of epochs of training')
 parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
 parser.add_argument('--dataroot', type=str, default='datasets/horse2zebra/', help='root directory of the dataset')
-parser.add_argument('--lr', type=float, default=3e-4, help='initial learning rate')
-parser.add_argument('--weight_decay', type=float, default=1e-3, help='weight decay')
+parser.add_argument('--lr', type=float, default=2e-4, help='initial learning rate')
+parser.add_argument('--weight_decay', type=float, default=1e-4, help='weight decay')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
 parser.add_argument('--size', type=int, default=256, help='size of the data crop (squared assumed)')
 parser.add_argument('--input_nc', type=int, default=1, help='number of channels of input data')
@@ -120,11 +120,11 @@ def test(G_A2B, G_B2A, D_A, D_B, overall_score, mode="A2B"):
             img_A = img.cuda()
             img_B = target.detach().squeeze().cpu().numpy()
             start_time = time.time()
-            fake_B = 0.5*(model(img_A).data + 1.0)
+            fake_B = model(img_A)
             metrics["time"] += (time.time()-start_time)
             fake_B = fake_B.detach().squeeze().cpu().numpy()
-            metrics["psnr"] += calculate_psnr(img_B, fake_B)
-            metrics["ssim"] += calculate_ssim(img_B, fake_B)
+            metrics["psnr"] += compute_PSNR(img_B, fake_B, data_range=1)
+            metrics["ssim"] += compute_SSIM(torch.tensor(img_B), torch.tensor(fake_B), data_range=1)
             metrics["dice"] += calculate_dice_coefficient(img_B, fake_B)
             save_image(torch.tensor(fake_B), osp.join(output_dir, name[0]))
             

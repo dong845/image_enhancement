@@ -53,9 +53,9 @@ class Generator(nn.Module):
             out_features = in_features//2
 
         # Output layer
-        model += [  nn.ReflectionPad2d(3),
-                    nn.Conv2d(64, output_nc, 7),
-                    nn.Tanh() ]
+        model += [  nn.ReflectionPad2d(1),
+                    nn.Conv2d(64, output_nc, 3),
+                    nn.Sigmoid() ]
 
         self.model = nn.Sequential(*model)
 
